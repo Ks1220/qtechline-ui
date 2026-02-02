@@ -1,6 +1,7 @@
 import type { StockLevel } from "./types";
+import { extractDocKey } from "./utils";
 
-const API_BASE = "https://api.qtechline.com";
+const API_BASE = "http://localhost:8787";
 
 const CF_ACCESS_CLIENT_ID = "b8e89d689814104c39a8f922e15b8dd1.access";
 const CF_ACCESS_CLIENT_SECRET =
@@ -23,18 +24,56 @@ export async function fetchStockLevels(): Promise<StockLevel[]> {
   return res.json();
 }
 
-export async function updateStockItem(stockNo: string, payload: any) {
-  const res = await fetch(`https://api.sql.my/stockitem/${stockNo}`, {
+// 1st Attempt to update: only update the sql side of things
+// export async function updateStockItem(stockNo: string, payload: any) {
+//   const res = await fetch(`https://api.sql.my/stockitem/${stockNo}`, {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify(payload),
+//   });
+
+//   if (!res.ok) {
+//     throw new Error("Failed to update stock item");
+//   }
+
+//   return res.json();
+// }
+
+export async function saveStockItem(stockNo: string, payload: any) {
+  console.log("Saving payload:", payload);
+  const res = await fetch(`${API_BASE}/stockLevels/${stockNo}/adjust`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "CF-Access-Client-Id": CF_ACCESS_CLIENT_ID,
+      "CF-Access-Client-Secret": CF_ACCESS_CLIENT_SECRET,
     },
-    body: JSON.stringify(payload),
+
+    body: JSON.stringify({ ...payload, stockNo }),
   });
 
   if (!res.ok) {
-    throw new Error("Failed to update stock item");
+    const text = await res.text();
+    throw new Error(text);
   }
 
   return res.json();
+}
+
+export async function fetchSqlStockItem(stockNo: string) {
+  const docKey = extractDocKey(stockNo);
+
+  const res = await fetch(`${API_BASE}/stockitem/${docKey}`, {
+    headers: {
+      "CF-Access-Client-Id": CF_ACCESS_CLIENT_ID,
+      "CF-Access-Client-Secret": CF_ACCESS_CLIENT_SECRET,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  return (await res.json()).balsqty;
 }

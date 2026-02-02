@@ -1,0 +1,11 @@
+[
+  { "code": "AC", "description": "AIR COMPRESSOR" },
+  { "code": "DEFAULT", "description": "DEFAULT" },
+  { "code": "FB", "description": "FABRICATION OF SLING" },
+  { "code": "GENSET", "description": "GENSET" },
+  { "code": "HF", "description": "HYDRAULIC HOSE & FITTING" },
+  { "code": "HK", "description": "Hook" },
+  { "code": "HYD", "description": "Hydraulic Hose Fitting" },
+  { "code": "ISP", "description": "INSPECTION" },
+  { "code": "L99", "description": "LOT 99 DEVELOPMENT INVENTORY" }
+]

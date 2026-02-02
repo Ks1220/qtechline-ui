@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchStockLevels, updateStockItem } from "./api";
+import { fetchSqlStockItem, fetchStockLevels, saveStockItem } from "./api";
 import type { StockLevel } from "./types";
 import "./App.css";
 
@@ -24,9 +24,20 @@ export default function App() {
   const totalPages = Math.ceil(data.length / PAGE_SIZE);
   const pageData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
-  const openModal = (item: StockLevel) => {
-    setSelectedItem(item);
-    setIsModalOpen(true);
+  const openModal = async (item: StockLevel) => {
+    try {
+      const sqlStock = await fetchSqlStockItem(item?.stockNo!);
+
+      setSelectedItem({
+        ...item,
+        stockLevel: sqlStock,
+      });
+
+      setIsModalOpen(true);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to load stock details");
+    }
   };
 
   const closeModal = () => {
@@ -38,7 +49,7 @@ export default function App() {
     if (!selectedItem) return;
 
     try {
-      await updateStockItem(selectedItem?.stockNo!, selectedItem);
+      await saveStockItem(selectedItem?.stockNo!, selectedItem);
       alert("Saved successfully");
       closeModal();
     } catch (err) {
@@ -107,6 +118,23 @@ export default function App() {
             <label>
               Description
               <input value={selectedItem.stockName} disabled />
+            </label>
+
+            <label>
+              Stock Level
+              <input
+                value={selectedItem.stockLevel ?? ""}
+                onChange={(e) =>
+                  setSelectedItem((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          stockLevel: e.target.value,
+                        }
+                      : prev
+                  )
+                }
+              />
             </label>
 
             {/* You can add more fields here later */}
