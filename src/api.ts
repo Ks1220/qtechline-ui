@@ -24,23 +24,6 @@ export async function fetchStockLevels(): Promise<StockLevel[]> {
   return res.json();
 }
 
-// 1st Attempt to update: only update the sql side of things
-// export async function updateStockItem(stockNo: string, payload: any) {
-//   const res = await fetch(`https://api.sql.my/stockitem/${stockNo}`, {
-//     method: "POST",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify(payload),
-//   });
-
-//   if (!res.ok) {
-//     throw new Error("Failed to update stock item");
-//   }
-
-//   return res.json();
-// }
-
 export async function saveStockItem(stockNo: string, payload: any) {
   const res = await fetch(`${API_BASE}/stockLevels/${stockNo}/adjust`, {
     method: "POST",

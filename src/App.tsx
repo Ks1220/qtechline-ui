@@ -1,32 +1,51 @@
 import { useEffect, useState } from "react";
 import { fetchSqlStockItem, fetchStockLevels, saveStockItem } from "./api";
 import type { StockLevel } from "./types";
+import stockGoupsMappings from "./utils/stockGroupMappings.json";
+
 import "./App.css";
 
 const PAGE_SIZE = 10;
 
 export default function App() {
   const MAX_VISIBLE_PAGES = 10;
+  const ALLOWED_PREFIXES = stockGoupsMappings.map((g) => g.code);
 
   const [data, setData] = useState<StockLevel[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [modalLoading, setModalLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [search, setSearch] = useState("");
 
   const [selectedItem, setSelectedItem] = useState<StockLevel | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    setPage(1);
+  }, [search]);
+
+  useEffect(() => {
     fetchStockLevels()
-      .then(setData)
+      .then((res) => {
+        const filtered = res.filter((item) =>
+          ALLOWED_PREFIXES.some((code) => item?.stockNo?.startsWith(code))
+        );
+        console.log("THIS IS FILERED", filtered);
+        setData(filtered);
+      })
       .finally(() => setLoading(false));
   }, []);
 
   if (loading) return <p className="loading">Loading...</p>;
 
-  const totalPages = Math.ceil(data.length / PAGE_SIZE);
-  const pageData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const filteredData = data.filter((item) =>
+    item?.stockNo?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+
+  const pageData = filteredData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const openModal = async (item: StockLevel) => {
     setSelectedItem(item);
@@ -82,7 +101,18 @@ export default function App() {
 
   return (
     <div className="container">
-      <h2 className="title">Stock Levels</h2>
+      <div className="stock-header">
+        <h2 className="title">Stock Levels</h2>
+
+        <div className="search-bar">
+          <input
+            type="text"
+            placeholder="Search by Stock No (e.g. HF-12)"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+      </div>
 
       <div className="table-wrapper">
         <table>
