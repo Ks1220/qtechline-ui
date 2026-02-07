@@ -180,3 +180,40 @@ button:disabled {
   border-radius: 4px;
   color: #ccc;
 }
+
+.pagination {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.pagination button {
+  min-width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: #f0f0f0;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ACTIVE PAGE */
+.pagination button.active {
+  background: #2563eb; /* blue */
+  color: white;
+  border-color: #2563eb;
+  font-weight: 600;
+}
+
+.pagination button.active:hover {
+  background: #2563eb;
+}

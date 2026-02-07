@@ -6,9 +6,13 @@ import "./App.css";
 const PAGE_SIZE = 10;
 
 export default function App() {
+  const MAX_VISIBLE_PAGES = 10;
+
   const [data, setData] = useState<StockLevel[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const [selectedItem, setSelectedItem] = useState<StockLevel | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,18 +29,26 @@ export default function App() {
   const pageData = data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const openModal = async (item: StockLevel) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+    setModalLoading(true);
+
     try {
       const sqlStock = await fetchSqlStockItem(item?.stockNo!);
 
-      setSelectedItem({
-        ...item,
-        stockLevel: sqlStock,
-      });
-
-      setIsModalOpen(true);
+      setSelectedItem((prev) =>
+        prev
+          ? {
+              ...prev,
+              stockLevel: sqlStock,
+            }
+          : prev
+      );
     } catch (err) {
       console.error(err);
       alert("Failed to load stock details");
+    } finally {
+      setModalLoading(false);
     }
   };
 
@@ -49,13 +61,23 @@ export default function App() {
     if (!selectedItem) return;
 
     try {
+      setSaving(true);
       await saveStockItem(selectedItem?.stockNo!, selectedItem);
       alert("Saved successfully");
       closeModal();
     } catch (err) {
       console.error(err);
       alert("Failed to save");
+    } finally {
+      setSaving(false);
     }
+  };
+
+  const getVisiblePages = () => {
+    const start = Math.max(1, page - Math.floor(MAX_VISIBLE_PAGES / 2));
+    const end = Math.min(totalPages, start + MAX_VISIBLE_PAGES - 1);
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
   };
 
   return (
@@ -88,19 +110,39 @@ export default function App() {
       </div>
 
       <div className="pagination">
-        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-          Prev
+        <button
+          disabled={page <= 10}
+          onClick={() => setPage((p) => Math.max(1, p - 10))}
+        >
+          «
         </button>
 
-        <span>
-          Page <strong>{page}</strong> of {totalPages}
-        </span>
+        <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+          ‹
+        </button>
+
+        {getVisiblePages().map((p) => (
+          <button
+            key={p}
+            className={p === page ? "active" : ""}
+            onClick={() => setPage(p)}
+          >
+            {p}
+          </button>
+        ))}
 
         <button
           disabled={page === totalPages}
           onClick={() => setPage((p) => p + 1)}
         >
-          Next
+          ›
+        </button>
+
+        <button
+          disabled={page + 10 > totalPages}
+          onClick={() => setPage((p) => Math.min(totalPages, p + 10))}
+        >
+          »
         </button>
       </div>
 
@@ -110,41 +152,49 @@ export default function App() {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Edit Stock Item</h3>
 
-            <label>
-              Stock No
-              <input value={selectedItem.stockNo} disabled />
-            </label>
+            {modalLoading ? (
+              <p className="loading">Loading stock details...</p>
+            ) : (
+              <>
+                <label>
+                  Stock No
+                  <input value={selectedItem.stockNo} disabled />
+                </label>
 
-            <label>
-              Description
-              <input value={selectedItem.stockName} disabled />
-            </label>
+                <label>
+                  Description
+                  <input value={selectedItem.stockName} disabled />
+                </label>
 
-            <label>
-              Stock Level
-              <input
-                value={selectedItem.stockLevel ?? ""}
-                onChange={(e) =>
-                  setSelectedItem((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          stockLevel: e.target.value,
-                        }
-                      : prev
-                  )
-                }
-              />
-            </label>
-
-            {/* You can add more fields here later */}
+                <label>
+                  Stock Level
+                  <input
+                    value={selectedItem.stockLevel ?? ""}
+                    onChange={(e) =>
+                      setSelectedItem((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              stockLevel: e.target.value,
+                            }
+                          : prev
+                      )
+                    }
+                  />
+                </label>
+              </>
+            )}
 
             <div className="modal-actions">
               <button onClick={closeModal} className="secondary">
                 Cancel
               </button>
-              <button onClick={handleSave} className="primary">
-                Save
+              <button
+                onClick={handleSave}
+                className="primary"
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save"}
               </button>
             </div>
           </div>

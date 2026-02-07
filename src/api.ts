@@ -1,7 +1,7 @@
 import type { StockLevel } from "./types";
 import { extractDocKey } from "./utils";
 
-const API_BASE = "http://localhost:8787";
+const API_BASE = "https://api.qtechline.com";
 
 const CF_ACCESS_CLIENT_ID = "b8e89d689814104c39a8f922e15b8dd1.access";
 const CF_ACCESS_CLIENT_SECRET =
@@ -42,7 +42,6 @@ export async function fetchStockLevels(): Promise<StockLevel[]> {
 // }
 
 export async function saveStockItem(stockNo: string, payload: any) {
-  console.log("Saving payload:", payload);
   const res = await fetch(`${API_BASE}/stockLevels/${stockNo}/adjust`, {
     method: "POST",
     headers: {
