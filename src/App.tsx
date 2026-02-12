@@ -39,9 +39,14 @@ export default function App() {
 
   if (loading) return <p className="loading">Loading...</p>;
 
-  const filteredData = data.filter((item) =>
-    item?.stockNo?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredData = data.filter((item) => {
+    const keyword = search.toLowerCase();
+
+    return (
+      item?.stockNo?.toLowerCase().includes(keyword) ||
+      item?.stockName?.toLowerCase().includes(keyword)
+    );
+  });
 
   const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
 
