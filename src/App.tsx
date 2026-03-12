@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import { fetchSqlStockItem, fetchStockLevels, saveStockItem } from "./api";
+import {
+  fetchSqlStockItem,
+  fetchStockLevels,
+  saveStockItem,
+  syncNewSqlStock,
+} from "./api";
 import type { StockLevel } from "./types";
 import stockGoupsMappings from "./utils/stockGroupMappings.json";
 
@@ -14,6 +19,7 @@ export default function App() {
   const [data, setData] = useState<StockLevel[]>([]);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
@@ -29,7 +35,7 @@ export default function App() {
     fetchStockLevels()
       .then((res) => {
         const filtered = res.filter((item) =>
-          ALLOWED_PREFIXES.some((code) => item?.stockNo?.startsWith(code))
+          ALLOWED_PREFIXES.some((code) => item?.stockNo?.startsWith(code)),
         );
         console.log("THIS IS FILERED", filtered);
         setData(filtered);
@@ -52,6 +58,19 @@ export default function App() {
 
   const pageData = filteredData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const handleSyncNewStock = async () => {
+    try {
+      setSyncing(true);
+      await syncNewSqlStock();
+      alert("SQL stock sync completed");
+    } catch (err) {
+      console.error(err);
+      alert("Sync failed");
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   const openModal = async (item: StockLevel) => {
     setSelectedItem(item);
     setIsModalOpen(true);
@@ -66,7 +85,7 @@ export default function App() {
               ...prev,
               stockLevel: sqlStock,
             }
-          : prev
+          : prev,
       );
     } catch (err) {
       console.error(err);
@@ -117,6 +136,14 @@ export default function App() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+
+        <button
+          className="sync-btn"
+          onClick={handleSyncNewStock}
+          disabled={syncing}
+        >
+          {syncing ? "Syncing..." : "Sync SQL Stock"}
+        </button>
       </div>
 
       <div className="table-wrapper">
@@ -212,7 +239,7 @@ export default function App() {
                               ...prev,
                               stockLevel: e.target.value,
                             }
-                          : prev
+                          : prev,
                       )
                     }
                   />

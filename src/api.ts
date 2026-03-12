@@ -59,3 +59,21 @@ export async function fetchSqlStockItem(stockNo: string) {
   }
   return (await res.json()).balsqty;
 }
+
+export async function syncNewSqlStock() {
+  const res = await fetch(`${API_BASE}/newSqlStock`, {
+    method: "GET",
+    headers: {
+      "CF-Access-Client-Id": CF_ACCESS_CLIENT_ID,
+      "CF-Access-Client-Secret": CF_ACCESS_CLIENT_SECRET,
+      Accept: "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Failed to sync SQL stock: ${text}`);
+  }
+
+  return res.json();
+}
