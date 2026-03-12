@@ -8,7 +8,11 @@ body {
   margin: 0;
   background: #1e1e1e;
   color: #eaeaea;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 
 .container {
@@ -244,4 +248,20 @@ button:disabled {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+.category-filter select {
+  padding: 10px 20px;
+  border-radius: 6px;
+}
+
+.category-filter::after {
+  content: "▾";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #aaa;
+  font-size: 12px;
 }

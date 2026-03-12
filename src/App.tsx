@@ -23,6 +23,7 @@ export default function App() {
   const [modalLoading, setModalLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
   const [selectedItem, setSelectedItem] = useState<StockLevel | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,10 +49,14 @@ export default function App() {
   const filteredData = data.filter((item) => {
     const keyword = search.toLowerCase();
 
-    return (
+    const matchSearch =
       item?.stockNo?.toLowerCase().includes(keyword) ||
-      item?.stockName?.toLowerCase().includes(keyword)
-    );
+      item?.stockName?.toLowerCase().includes(keyword);
+
+    const matchCategory =
+      !categoryFilter || item?.equipmentClass?.code === categoryFilter;
+
+    return matchSearch && matchCategory;
   });
 
   const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
@@ -137,6 +142,20 @@ export default function App() {
           />
         </div>
 
+        <div className="category-filter">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+          >
+            <option value="">All Categories</option>
+            {stockGoupsMappings.map((group) => (
+              <option key={group.code} value={group.code}>
+                {group.code} - {group.description}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
           className="sync-btn"
           onClick={handleSyncNewStock}
@@ -152,6 +171,7 @@ export default function App() {
             <tr>
               <th>Stock No</th>
               <th>Description</th>
+              <th>Category</th>
               <th className="actions-col"></th>
             </tr>
           </thead>
@@ -160,6 +180,7 @@ export default function App() {
               <tr key={item.stockNo}>
                 <td className="mono">{item.stockNo}</td>
                 <td>{item.stockName}</td>
+                <td>{item?.equipmentClass?.code ?? "-"}</td>
                 <td className="actions">
                   <button className="dots-btn" onClick={() => openModal(item)}>
                     ⋯
