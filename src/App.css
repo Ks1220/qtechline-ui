@@ -251,17 +251,17 @@ button:disabled {
 }
 
 .category-filter select {
-  padding: 10px 20px;
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 40px 10px 20px;
   border-radius: 6px;
-}
+  border: 1px solid #ccc;
 
-.category-filter::after {
-  content: "▾";
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-  color: #aaa;
-  font-size: 12px;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
 }
