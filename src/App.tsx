@@ -32,16 +32,23 @@ export default function App() {
     setPage(1);
   }, [search]);
 
+  const loadStockLevels = async () => {
+    setLoading(true);
+    try {
+      const res = await fetchStockLevels();
+      const filtered = res.filter((item) =>
+        ALLOWED_PREFIXES.some((code) => item?.stockNo?.startsWith(code)),
+      );
+      setData(filtered);
+    } catch (err) {
+      console.error("Failed to fetch stock levels", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchStockLevels()
-      .then((res) => {
-        const filtered = res.filter((item) =>
-          ALLOWED_PREFIXES.some((code) => item?.stockNo?.startsWith(code)),
-        );
-        console.log("THIS IS FILERED", filtered);
-        setData(filtered);
-      })
-      .finally(() => setLoading(false));
+    loadStockLevels();
   }, []);
 
   if (loading) return <p className="loading">Loading...</p>;
@@ -67,6 +74,7 @@ export default function App() {
     try {
       setSyncing(true);
       await syncNewSqlStock();
+      await loadStockLevels();
       alert("SQL stock sync completed");
     } catch (err) {
       console.error(err);
