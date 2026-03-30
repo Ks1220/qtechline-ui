@@ -73,9 +73,24 @@ export default function App() {
   const handleSyncNewStock = async () => {
     try {
       setSyncing(true);
-      await syncNewSqlStock();
+
+      const result = await syncNewSqlStock();
+
+      // Check response
+      if (!result || result.result !== "Success") {
+        alert("Sync failed");
+        return;
+      }
+
+      // If nothing to sync
+      if (!result.ids || result.ids.length === 0) {
+        alert("No new stock to sync");
+        return;
+      }
+
+      // If sync success and has items
       await loadStockLevels();
-      alert("SQL stock sync completed");
+      alert(`SQL stock sync completed. ${result.ids.length} new items synced.`);
     } catch (err) {
       console.error(err);
       alert("Sync failed");
